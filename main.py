@@ -2,7 +2,7 @@ import discord, aio_pika, asyncio, argparse, aio_pika.abc, json, re, random
 from discord.ext import commands
 from dotenv import dotenv_values
 from aio_pika.exchange import ExchangeType
-from setup_view import SessionSetupView, Session
+from setup_view import SessionSetupView, Session, SwitcherSetupView
 from rocksdict import Rdict
 
 class WindstormBot(commands.Bot):
@@ -112,24 +112,31 @@ class WindstormBot(commands.Bot):
         if message.channel.id != session.chasers_channel and message.channel.id != session.trainers_channel:
             return
         
-        if message.content.startswith("https://www.nationstates.net/nation="):
-            match = self.NATION_REGEX.match(message.content)
-            nation = match.group(1)
-
-            is_trainer = message.channel.id == session.trainers_channel
-            session.users[nation] = (message.author.id, is_trainer)
-            await message.channel.send(f"Nation {nation} linked to {message.author.display_name}")
+        if message.content == "!link":
+            await SwitcherSetupView(self, session).send(message)
 
         if message.content == "!unlink":
-            linked_nation = None
+            linked_nations = []
             for nation, (user, is_trainer) in session.users.items():
                 if user == message.author.id:
-                    linked_nation = nation
-                    break
+                    linked_nations.append(nation)
 
-            if linked_nation is not None:
-                session.users.pop(linked_nation, None)
-                await message.channel.send(f"Nation {linked_nation} unlinked from {message.author.display_name}")
+            for nation in linked_nations:
+                session.users.pop(nation, None)
+
+            if len(linked_nations) > 0:
+                await message.channel.send(f"**{linked_nations} nations** unlinked from {message.author.display_name}.")
+            else:
+                await message.channel.send(f"{message.author.display_name} has no nations linked.")
+
+        if message.content == "!switchers":
+            linked_nations = []
+            for nation, (user, is_trainer) in session.users.items():
+                if user == message.author.id:
+                    linked_nations.append(nation)
+
+            if len(linked_nations) > 0:
+                await message.channel.send(f"{message.author.display_name} has **{linked_nations} nations** linked.")
             else:
                 await message.channel.send(f"{message.author.display_name} has no nations linked.")
 
@@ -140,7 +147,7 @@ class WindstormBot(commands.Bot):
             region = random.choice(session.targets)
             session.current_target = region
             await message.channel.send(embed=self.generate_region_embed(region))
-        if message.content == "!report":
+        if message.content == "!r":
             region = session.current_target
 
             first_move = None

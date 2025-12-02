@@ -86,3 +86,56 @@ class SessionSetupView(discord.ui.View):
         except IndexError:
             await self.message.channel.send("Please select a valid channel for all three dropdowns!")
             return
+        
+class SwitcherSetupForm(discord.ui.Modal):
+    switchers = discord.ui.TextInput(label="Switchers", style=discord.TextStyle.long, required=True)
+
+    def __init__(self, view):
+        self.view = view
+        super().__init__(title="Link Switchers")
+
+    async def on_submit(self, interaction: discord.Interaction):
+        switchers = [sw.lower().replace(" ", "_") for sw in self.switchers.value.splitlines()]
+        await interaction.response.defer()
+        await self.view.confirm_switchers(switchers)
+
+class SwitcherSetupView(discord.ui.View):
+    def __init__(self, bot, session: Session):
+        super().__init__(timeout=300)
+        self.bot = bot
+        self.session = session
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user == self.user:
+            return True
+        else:
+            await interaction.response.send_message("Only the author of the command can perform this action.", ephemeral=True)
+            return False
+
+    @discord.ui.button(label="Link Switchers", style=discord.ButtonStyle.blurple, row=3)
+    async def set_switchers(self, interaction: discord.Interaction, button: discord.Button) -> None:
+        await interaction.response.send_modal(SwitcherSetupForm(self))
+
+    async def send(self, message: discord.Message):
+        new_message = await message.channel.send(
+            "Press the button below to enter a list of switchers.\n" \
+            "Your previous switchers will not be cleared. Run !unlink for that.", 
+            view=self
+        )
+
+        self.message = new_message
+        self.user = message.author
+
+    async def on_timeout(self):
+        await self.message.edit(view=None)
+
+    async def confirm_switchers(self, switchers: list[str]):
+        is_trainer = self.message.channel.id == self.session.trainers_channel
+
+        for switcher in switchers:
+            self.bot.users[switcher] = (self.user.id, is_trainer)
+
+        await self.message.edit(view=None)
+        await self.message.channel.send(
+            f"Linked **{len(switchers)} nations** to {self.user.display_name}."
+        )
