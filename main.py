@@ -125,7 +125,7 @@ class WindstormBot(commands.Bot):
                 session.users.pop(nation, None)
 
             if len(linked_nations) > 0:
-                await message.channel.send(f"**{linked_nations} nations** unlinked from {message.author.display_name}.")
+                await message.channel.send(f"**{len(linked_nations)} nations** unlinked from {message.author.display_name}.")
             else:
                 await message.channel.send(f"{message.author.display_name} has no nations linked.")
 
@@ -136,7 +136,7 @@ class WindstormBot(commands.Bot):
                     linked_nations.append(nation)
 
             if len(linked_nations) > 0:
-                await message.channel.send(f"{message.author.display_name} has **{linked_nations} nations** linked.")
+                await message.channel.send(f"{message.author.display_name} has **{len(linked_nations)} nations** linked.")
             else:
                 await message.channel.send(f"{message.author.display_name} has no nations linked.")
 
