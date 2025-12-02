@@ -133,7 +133,7 @@ class SwitcherSetupView(discord.ui.View):
         is_trainer = self.message.channel.id == self.session.trainers_channel
 
         for switcher in switchers:
-            self.bot.users[switcher] = (self.user.id, is_trainer)
+            self.session.users[switcher] = (self.user.id, is_trainer)
 
         await self.message.edit(view=None)
         await self.message.channel.send(
