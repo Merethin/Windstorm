@@ -44,7 +44,7 @@ class WindstormBot(commands.Bot):
     def generate_score_embed(self, scores: list[tuple[int, int]]):
         return discord.Embed(
             title=f"Final Scores",
-            description="\n".join([f"{index+1}: <@{user}>, {(score[0]/score[1]):.2f}s average, {score[0]}s across [{score[1]}] jumps" for index, (user, score) in enumerate(scores)])
+            description="\n".join([f"{index+1}: <@{user}>, {(score[0]/score[1]):.2f}s average, {score[0]}s across {score[1]} jumps" for index, (user, score) in enumerate(scores)])
         )
 
     async def sse_loop(self):
