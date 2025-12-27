@@ -8,7 +8,7 @@ class Session:
         self.targets: list[str] = []
         self.users: dict[str, tuple[int, bool]] = {}
         self.moves: dict[int, tuple[int, int, bool]] = {}
-        self.scores: dict[int, int] = {}
+        self.scores: dict[int, tuple[int, int]] = {}
         self.current_target: str | None = None
 
     def set_targets(self, targets: list[str]):

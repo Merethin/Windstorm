@@ -44,7 +44,7 @@ class WindstormBot(commands.Bot):
     def generate_score_embed(self, scores: list[tuple[int, int]]):
         return discord.Embed(
             title=f"Final Scores",
-            description="\n".join([f"{index+1}: <@{user}>, {score} total seconds" for index, (user, score) in enumerate(scores)])
+            description="\n".join([f"{index+1}: <@{user}>, {score[0]/score[1]}s average, {score[0]}s across [{score[1]}] jumps" for index, (user, score) in enumerate(scores)])
         )
 
     async def sse_loop(self):
@@ -181,8 +181,8 @@ class WindstormBot(commands.Bot):
 
             for (user, time) in moves:
                 if user not in session.scores:
-                    session.scores[user] = 0
-                session.scores[user] += time
+                    session.scores[user] = (0, 0)
+                session.scores[user] = (session.scores[user][0] + time, session.scores[user][1] + 1)
 
             session.current_target = None
             session.moves = {}
@@ -194,7 +194,7 @@ class WindstormBot(commands.Bot):
             ))
         if message.content == "!scores":
             scores = list(session.scores.items())
-            scores.sort(key=lambda a: a[1])
+            scores.sort(key=lambda a: a[1][0] / a[1][1])
             if len(scores) == 0:
                 await message.channel.send(f"No scores recorded yet!")
                 return
