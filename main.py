@@ -70,7 +70,8 @@ class WindstormBot(commands.Bot):
                             if target == session.current_target and nation in session.users:
                                 print(f"[ID: {event_id}, time: {time}]: {nation} moved to {target}")
                                 user_id, is_trainer = session.users[nation]
-                                session.moves[user_id] = (time, event_id, is_trainer)
+                                if user_id not in session.moves:
+                                    session.moves[user_id] = (time, event_id, is_trainer)
 
     async def setup_hook(self):
         loop = asyncio.get_event_loop()
